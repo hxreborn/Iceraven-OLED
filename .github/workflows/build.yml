@@ -91,7 +91,7 @@ jobs:
         id: create_release
         # The condition now directly uses the output from the version_check step
         if: steps.version_check.outputs.NEW_VERSION_AVAILABLE == 'true'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
