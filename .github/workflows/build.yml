@@ -12,6 +12,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -20,9 +22,10 @@ jobs:
         id: this_repo_latest_release
         uses: cardinalby/git-get-release-action@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           latest: true
+          doNotFailIfNotFound: true
           # Optional: You might want to specify a repository if it's not the current one,
           # but for checking your own repo, 'owner/repo' isn't usually needed.
           # If this action ever fails to find a release, its outputs will be empty.
@@ -56,10 +59,10 @@ jobs:
           echo "This repository's latest release version: ${THIS_REPO_VERSION:-"No previous release found."}"
 
           if [ "$UPSTREAM_VERSION" != "$THIS_REPO_VERSION" ]; then
-            echo "::set-output name=NEW_VERSION_AVAILABLE::true"
+            echo "NEW_VERSION_AVAILABLE=true" >> $GITHUB_OUTPUT
             echo "New version available! Building and releasing."
           else
-            echo "::set-output name=NEW_VERSION_AVAILABLE::false"
+            echo "NEW_VERSION_AVAILABLE=false" >> $GITHUB_OUTPUT
             echo "No new version from upstream. Skipping build and release."
           fi
       
@@ -90,7 +93,7 @@ jobs:
         if: steps.version_check.outputs.NEW_VERSION_AVAILABLE == 'true'
         uses: softprops/action-gh-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.get_upstream_release.outputs.ICERAVEN_VERSION }}
           name: IceRaven Dark Theme ${{ steps.get_upstream_release.outputs.ICERAVEN_VERSION }}
